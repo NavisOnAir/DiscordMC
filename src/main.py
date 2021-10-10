@@ -51,6 +51,14 @@ class Client(discord.Client):
         except KeyError:
             self.is_backup = False
             self.update_settings("backup", self.is_backup)
+        
+        # rcon
+        try:
+            self.rcon_adress = settings["rcon_adress"]
+            self.rcon_password = settings["rcon_password"]
+        except KeyError:
+            self.rcon_adress = "Nonn"
+            self.rcon_password = "None"
 
         print("Bot logged in")
     
@@ -91,10 +99,15 @@ class Client(discord.Client):
                 await message.channel.send(f"[BOT] [INFO]: no Server running!")
             else:
                 # connect via rcon to server
-                with MCRcon("192.168.178.160", "test") as mcr:
-                    resp = mcr.command("/stop")
-                    await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
-                self.is_server_running = False
+                if self.rcon_adress == "None" or self.rcon_password == "None":
+                    message.channel.send(f"[BOT] [ERROR]: Please set rcon_adress and rcon_password in settings.json to use rcon")
+                    self.update_settings("rcon_adress", "None")
+                    self.update_settings("rcon_password", "None")
+                else:
+                    with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                        resp = mcr.command("/stop")
+                        await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
+                    self.is_server_running = False
 
         # set server file path
         if message.content.startswith(f"{self.prefix}setServerFile:"):
