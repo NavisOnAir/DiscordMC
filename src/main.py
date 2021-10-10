@@ -129,7 +129,7 @@ class Client(discord.Client):
                 if self.world_dir == "None":
                     await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
                 else:
-                    schedule.every(1).hour.do(self.backup)
+                    self.backup_schedule = schedule.every(1).hour.do(self.backup)
                     self.is_backup = True
                     self.update_settings("backup", self.is_backup)
                     await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
