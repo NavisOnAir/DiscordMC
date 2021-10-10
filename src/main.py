@@ -45,14 +45,14 @@ class Client(discord.Client):
             self.update_settings("backup", self.is_backup)
         
         # auto backup
-        """try:
+        try:
             self.is_backup = settings["backup"]
-            if self.is_backup and self.world_dir != "None":
-                self.backup_schedule = schedule.every(1).hour.do(self.backup)
+            #if self.is_backup and self.world_dir != "None":
+                #self.backup_schedule = schedule.every(1).hour.do(self.backup)
 
         except KeyError:
             self.is_backup = False
-            self.update_settings("backup", self.is_backup)"""
+            self.update_settings("backup", self.is_backup)
         
         # rcon
         try:
