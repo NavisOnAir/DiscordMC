@@ -45,7 +45,8 @@ class Client(discord.Client):
         # set server file path
         if message.content.startswith("|setServerFile:"):
             self.server_start_file == message.content.split(":")[1]
-            self.save_settings("server_file", self.server_start_file)
+            self.update_settings("server_file", self.server_start_file)
+            message.channel.send(f"[BOT] [COMMAND]: changed start file to: '{self.server_start_file}'")
     
     # save a setting value to name in settings.settings
     def update_settings(self, settings_name, setting_value):
