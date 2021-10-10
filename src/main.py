@@ -113,6 +113,10 @@ class Client(discord.Client):
                             resp = mcr.command("/stop")
                             await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
                         self.is_server_running = False
+                        if self.is_backup and self.world_dir != 'None':
+                            self.backup()
+                        elif self.world_dir == 'None':
+                            await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory to backup worlds: '{self.prefix}SetWorldDir:<path/to/world>'")
 
             # set server file path
             if message.content.startswith(f"{self.prefix}setServerFile:"):
@@ -132,21 +136,22 @@ class Client(discord.Client):
             # enable auto backup
             if message.content.startswith(f"{self.prefix}EnableBackup"):
                 await message.channel.send(f"[BOT] [COMMAND]: Auto Backup WIP")
-                """if self.world_dir == "None":
+                if self.world_dir == "None":
                     await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
                 else:
-                    self.backup_schedule = schedule.every(1).hour.do(self.backup)
+                    #self.backup_schedule = schedule.every(1).hour.do(self.backup)
                     self.is_backup = True
                     self.update_settings("backup", self.is_backup)
-                    await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")"""
+                    await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup after server stopped")
+                    self.backup()
             
             # disable auto backup
             if message.content.startswith(f"{self.prefix}DisableBackup"):
                 await message.channel.send(f"[BOT] [COMMAND]: Auto Backup WIP")
-                """schedule.cancel_job(self.backup_schedule)
+                #schedule.cancel_job(self.backup_schedule)
                 self.is_backup = False
                 self.update_settings("backup", self.is_backup)
-                await message.channel.send(f"[BOT] [COMMAND]: Disabled auto Backup! At your own Risk!")"""
+                await message.channel.send(f"[BOT] [COMMAND]: Disabled auto Backup! At your own Risk!")
             
             # sends backup status
             if message.content.startswith(f"{self.prefix}BackupStatus"):
