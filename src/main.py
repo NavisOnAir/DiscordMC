@@ -139,7 +139,7 @@ class Client(discord.Client):
                 schedule.cancel_job(self.backup_schedule)
                 self.is_backup = False
                 self.update_settings("backup", self.is_backup)
-                await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
+                await message.channel.send(f"[BOT] [COMMAND]: Disabled auto Backup! At your own Risk!")
             
             # sends backup status
             if message.content.startswith(f"{self.prefix}BackupStatus"):
