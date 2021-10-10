@@ -100,7 +100,7 @@ class Client(discord.Client):
             else:
                 # connect via rcon to server
                 if self.rcon_adress == "None" or self.rcon_password == "None":
-                    message.channel.send(f"[BOT] [ERROR]: Please set rcon_adress and rcon_password in settings.json to use rcon")
+                    await message.channel.send(f"[BOT] [ERROR]: Please set rcon_adress and rcon_password in settings.json to use rcon")
                     self.update_settings("rcon_adress", "None")
                     self.update_settings("rcon_password", "None")
                 else:
