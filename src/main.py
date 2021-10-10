@@ -56,6 +56,20 @@ class Client(discord.Client):
     
     # method message received
     async def on_message(self, message):
+        # display all commands
+        if message.content.lower() == f"{self.prefix}help":
+            await message.channel.send(f"""**Here are all commands listed**\n
+            prefix is set to: '{self.prefix}', use it before every command\n
+            'help' to display this message\n
+            'setServerFile:<server_file_path>' to set the path to the server start file\n
+            'StartServer' to start the Server file\n
+            'StopServer' to stop the server\n
+            'SetWorldDir:<path/to/world> set the path to the worldsfolder\n
+            'EnableBackup' enables auto backup function every hour\n
+            'DisableBackup' disable auto backup function\n
+            'BackupStatus' sends the backup status either off or on\n
+            """)
+
         # Start server start script from server_file
         if message.content == f"{self.prefix}StartServer":
             # checks if server_start_file is set
