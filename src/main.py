@@ -98,6 +98,7 @@ class Client(discord.Client):
                         self.is_server_running = True
                     except FileNotFoundError as e:
                         await message.channel.send(f"[BOT] [ERROR]: raised {e}")
+
             # Stop Server currently running
             if message.content == f"{self.prefix}StopServer":
                 if self.is_server_running == False:
@@ -109,14 +110,16 @@ class Client(discord.Client):
                         self.update_settings("rcon_adress", "None")
                         self.update_settings("rcon_password", "None")
                     else:
-                        with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
-                            resp = mcr.command("/stop")
-                            await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
                         self.is_server_running = False
                         if self.is_backup and self.world_dir != 'None':
                             self.backup()
                         elif self.world_dir == 'None':
                             await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory to backup worlds: '{self.prefix}SetWorldDir:<path/to/world>'")
+                        else:
+                            with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                                resp = mcr.command("/stop")
+                            await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
+
 
             # set server file path
             if message.content.startswith(f"{self.prefix}setServerFile:"):
