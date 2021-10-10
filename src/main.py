@@ -1,4 +1,4 @@
-import discord, subprocess, os, json, multiprocessing, schedule, shutil, time
+import discord, subprocess, os, json, multiprocessing, schedule, shutil, time, threading
 from mcrcon import MCRcon
 
 class Client(discord.Client):
@@ -164,15 +164,23 @@ class Client(discord.Client):
     
     # backup minecraft world
     def backup(self):
+        with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+            resp = mcr.command('/tellraw @a [{"text":"Start Backup","color":"aqua"}]')
         backup_path = f"{os.path.dirname(self.world_dir)}/backups"
         if not os.path.exists(backup_path):
             os.mkdir(backup_path)
         shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
 
-                
+# run next method schuduled at scheduled time
+def check_schedule():
+    schedule.run_pending()
+    threading.Timer(60.0, check_schedule)
 
 
 if __name__ == '__main__':
+    # schedule loop
+    check_schedule()
+
     # directory path
     DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
