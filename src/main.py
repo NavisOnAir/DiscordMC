@@ -1,3 +1,5 @@
+import platform
+import socket
 import discord, subprocess, os, json, multiprocessing, schedule, shutil, time, threading
 from mcrcon import MCRcon
 
@@ -120,7 +122,10 @@ class Client(discord.Client):
             
             # set minecraft world directory
             if message.content.startswith(f"{self.prefix}SetWorldDir:"):
-                self.world_dir = message.content.split(":")[1]
+                world_dir_list = message.content.split(":")
+                self.world_dir = ""
+                for index in range(1, len(world_dir_list)):
+                    self.world_dir += world_dir_list[index]
                 self.update_settings("world", self.world_dir)
                 await message.channel.send(f"[BOT] [COMMAND]: changed world directory to: '{self.world_dir}'")
             
@@ -164,18 +169,44 @@ class Client(discord.Client):
     
     # backup minecraft world
     def backup(self):
-        print("[BOT] [BACKUP]: Started backup")
-        with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
-            resp = mcr.command('/tellraw @a [{"text":"Start Backup","color":"aqua"}]')
-        backup_path = f"{os.path.dirname(self.world_dir)}/backups"
-        if not os.path.exists(backup_path):
-            os.mkdir(backup_path)
-        shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
+        def backing_up(self, num=0):
+            print("[BOT] [BACKUP]: Started backup")
+            try:
+                with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                    mcr.command('/tellraw @a [{"text":"Starting Backup in 5","color":"aqua"}]')
+                    time.sleep(1)
+                    mcr.command('/tellraw @a [{"text":"Starting Backup in 4","color":"aqua"}]')
+                    time.sleep(1)
+                    mcr.command('/tellraw @a [{"text":"Starting Backup in 3","color":"aqua"}]')
+                    time.sleep(1)
+                    mcr.command('/tellraw @a [{"text":"Starting Backup in 2","color":"aqua"}]')
+                    time.sleep(1)
+                    mcr.command('/tellraw @a [{"text":"Starting Backup in 1","color":"aqua"}]')
+                    time.sleep(1)
+                    mcr.command('/tellraw @a [{"text":"Starting Backup","color":"aqua"}]')
+                    mcr.command('/stop')
+                    time.sleep(5)
+            except socket.gaierror:
+                print("[BOT] [INFO]: Server offline no need to stop")
+            backup_path = f"{os.path.dirname(self.world_dir)}/backups"
+            if platform.architecture() == 'Windows':
+                backup_path.replace('/', '\\')
+            if not os.path.exists(backup_path):
+                os.mkdir(backup_path)
+            if platform.architecture() == 'Windows':
+                shutil.copytree(self.world_dir, f"{backup_path}\\world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
+            else:
+                shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
+        BackupThread = threading.Thread(target=backing_up, args=(self, 0))
+        BackupThread.daemon = True
+        BackupThread.start()
 
 # run next method schuduled at scheduled time
 def check_schedule():
     schedule.run_pending()
-    threading.Timer(30.0, check_schedule)
+    TimerInstance = threading.Timer(60.0, check_schedule)
+    TimerInstance.daemon = True
+    TimerInstance.start()
 
 
 if __name__ == '__main__':
