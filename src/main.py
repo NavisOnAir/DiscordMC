@@ -146,7 +146,7 @@ class Client(discord.Client):
                 if self.is_backup:
                     await message.channel.send(f"[BOT] [COMMAND]: World Backup enabled")
                 else:
-                    await message.channel.send(f"[BOT] [COMMAND]: World Backup diabled")
+                    await message.channel.send(f"[BOT] [COMMAND]: World Backup disabled")
     
     
     # save a setting value to name in settings.settings
