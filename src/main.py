@@ -1,33 +1,62 @@
-import discord, subprocess, os
+import discord, subprocess, os, json
 
 class Client(discord.Client):
     # method on loged in
     async def on_ready(self):
         # fetch settings data
-        if not os.path.exists("settings.settings"):
-            with open("settings.settings", 'w') as f:
-                pass
-        with open("settings.settings", 'r') as f:
-            settings = f.read().split('\n')
+        if not os.path.exists("settings.json"):
+            json_init = {}
+            with open("settings.json", 'w') as f:
+                f.write(json.dumps(json_init))
+        with open("settings.json", 'r') as f:
+            settings = json.loads(f.read())
         
         # set settings variables
-        if settings[0].startswith('prefix'):
-            self.prefix = settings[0].split(':')[1]
-        else:
+        # prefix
+        try:
+            self.prefix = settings["prefix"]
+        except KeyError:
             self.prefix = "|"
-            with open("settings.settings", 'a') as f:
-                f.write(f"{self.prefix}\n")
+            self.update_settings("prefix", self.prefix)
+        # server start file
+        try:
+            self.server_start_file = settings["server_file"]
+        except KeyError:
+            self.server_start_file = "None"
+            self.update_settings("server_file", self.server_start_file)
+        
 
         print("Bot logged in")
     
     # method message received
     async def on_message(self, message):
+        # Start server start script from server_file
         if message.content == f"{self.prefix}StartServer":
-            try:
-                await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
-                subprocess.call(["sh","/home/minecraft_forge_server/ServerStart.sh"])
-            except FileNotFoundError as e:
-                await message.channel.send(f"[BOT] [ERROR]: raised {e}")
+            # checks if server_start_file is set
+            if self.server_start_file == "None":
+                await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: |setServerFile:<server_file_path>")
+            else:
+                try:
+                    await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
+                    subprocess.call(["sh", self.server_start_file])
+                except FileNotFoundError as e:
+                    await message.channel.send(f"[BOT] [ERROR]: raised {e}")
+        
+        # set server file path
+        if message.content.startswith("|setServerFile:"):
+            self.server_start_file == message.content.split(":")[1]
+            self.save_settings("server_file", self.server_start_file)
+    
+    # save a setting value to name in settings.settings
+    def update_settings(self, settings_name, setting_value):
+        # read settings data
+        with open("settings.json", 'r') as f:
+            settings = json.loads(f.read())
+        settings[settings_name] = setting_value
+        # write new settings data
+        with open("settings.json", 'w') as f:
+            f.write(json.dumps(settings))
+
                 
 
 

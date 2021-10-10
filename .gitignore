@@ -4,5 +4,5 @@
 # outsourced token
 token.txt
 
-# settings files
-*.settings
+# settings file
+settings.json
