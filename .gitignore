@@ -1,0 +1,8 @@
+# ignore virtuel environment
+.venv/
+
+# outsourced token
+token.txt
+
+# settings files
+*.settings
