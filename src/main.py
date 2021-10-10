@@ -169,37 +169,33 @@ class Client(discord.Client):
     
     # backup minecraft world
     def backup(self):
-        def backing_up(self, num=0):
-            print("[BOT] [BACKUP]: Started backup")
-            try:
-                with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
-                    mcr.command('/tellraw @a [{"text":"Starting Backup in 5","color":"aqua"}]')
-                    time.sleep(1)
-                    mcr.command('/tellraw @a [{"text":"Starting Backup in 4","color":"aqua"}]')
-                    time.sleep(1)
-                    mcr.command('/tellraw @a [{"text":"Starting Backup in 3","color":"aqua"}]')
-                    time.sleep(1)
-                    mcr.command('/tellraw @a [{"text":"Starting Backup in 2","color":"aqua"}]')
-                    time.sleep(1)
-                    mcr.command('/tellraw @a [{"text":"Starting Backup in 1","color":"aqua"}]')
-                    time.sleep(1)
-                    mcr.command('/tellraw @a [{"text":"Starting Backup","color":"aqua"}]')
-                    mcr.command('/stop')
-                    time.sleep(5)
-            except socket.gaierror:
-                print("[BOT] [INFO]: Server offline no need to stop")
-            backup_path = f"{os.path.dirname(self.world_dir)}/backups"
-            if platform.architecture() == 'Windows':
-                backup_path.replace('/', '\\')
-            if not os.path.exists(backup_path):
-                os.mkdir(backup_path)
-            if platform.architecture() == 'Windows':
-                shutil.copytree(self.world_dir, f"{backup_path}\\world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
-            else:
-                shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
-        BackupThread = threading.Thread(target=backing_up, args=(self, 0))
-        BackupThread.daemon = True
-        BackupThread.start()
+        print("[BOT] [BACKUP]: Started backup")
+        try:
+            with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                mcr.command('/tellraw @a [{"text":"Starting Backup in 5","color":"aqua"}]')
+                time.sleep(1)
+                mcr.command('/tellraw @a [{"text":"Starting Backup in 4","color":"aqua"}]')
+                time.sleep(1)
+                mcr.command('/tellraw @a [{"text":"Starting Backup in 3","color":"aqua"}]')
+                time.sleep(1)
+                mcr.command('/tellraw @a [{"text":"Starting Backup in 2","color":"aqua"}]')
+                time.sleep(1)
+                mcr.command('/tellraw @a [{"text":"Starting Backup in 1","color":"aqua"}]')
+                time.sleep(1)
+                mcr.command('/tellraw @a [{"text":"Starting Backup","color":"aqua"}]')
+                mcr.command('/stop')
+                time.sleep(5)
+        except socket.gaierror:
+            print("[BOT] [INFO]: Server offline no need to stop")
+        backup_path = f"{os.path.dirname(self.world_dir)}/backups"
+        if platform.architecture() == 'Windows':
+            backup_path.replace('/', '\\')
+        if not os.path.exists(backup_path):
+            os.mkdir(backup_path)
+        if platform.architecture() == 'Windows':
+            shutil.copytree(self.world_dir, f"{backup_path}\\world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
+        else:
+            shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
 
 # run next method schuduled at scheduled time
 def check_schedule():
