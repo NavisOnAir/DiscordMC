@@ -75,9 +75,9 @@ class Client(discord.Client):
             'StartServer' to start the Server file\n
             'StopServer' to stop the server\n
             'SetWorldDir:<path/to/world> set the path to the worldsfolder\n
-            'EnableBackup' enables auto backup function every hour\n
-            'DisableBackup' disable auto backup function\n
-            'BackupStatus' sends the backup status either off or on\n
+            'EnableBackup' enables auto backup function every hour WIP\n
+            'DisableBackup' disable auto backup function WIP\n
+            'BackupStatus' sends the backup status either off or on WIP\n
             """)
 
         # only available if author has admin role
