@@ -61,6 +61,7 @@ class Client(discord.Client):
                 with MCRcon("192.168.178.160", "test") as mcr:
                     resp = mcr.command("/stop")
                     await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
+                self.is_server_running = False
 
         # set server file path
         if message.content.startswith("|setServerFile:"):
