@@ -1,4 +1,4 @@
-import discord, subprocess, os, json, multiprocessing
+import discord, subprocess, os, json, multiprocessing, schedule, shutil, time
 from mcrcon import MCRcon
 
 class Client(discord.Client):
@@ -31,7 +31,26 @@ class Client(discord.Client):
             self.server_start_file = settings["server_file"]
         except KeyError:
             self.server_start_file = "None"
-            self.update_settings("server_file", self.server_start_file)        
+            self.update_settings("server_file", self.server_start_file)
+        
+        # world directory
+        try:
+            self.world_dir = settings["world"]
+        except KeyError:
+            self.world_dir = "None"
+            self.is_backup = False
+            self.update_settings("world", self.world_dir)
+            self.update_settings("backup", self.is_backup)
+        
+        # auto backup
+        try:
+            self.is_backup = settings["backup"]
+            if self.is_backup and self.world_dir != "None":
+                schedule.every(1).hour.do(self.backup)
+
+        except KeyError:
+            self.is_backup = False
+            self.update_settings("backup", self.is_backup)
 
         print("Bot logged in")
     
@@ -41,7 +60,7 @@ class Client(discord.Client):
         if message.content == f"{self.prefix}StartServer":
             # checks if server_start_file is set
             if self.server_start_file == "None":
-                await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: |setServerFile:<server_file_path>")
+                await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: {self.prefix}setServerFile:<server_file_path>")
             elif self.is_server_running == True:
                 await message.channel.send(f"[BOT] [INFO]: Server is running!")
             else:
@@ -64,10 +83,41 @@ class Client(discord.Client):
                 self.is_server_running = False
 
         # set server file path
-        if message.content.startswith("|setServerFile:"):
+        if message.content.startswith(f"{self.prefix}setServerFile:"):
             self.server_start_file = message.content.split(":")[1]
             self.update_settings("server_file", self.server_start_file)
             await message.channel.send(f"[BOT] [COMMAND]: changed start file to: '{self.server_start_file}'")
+        
+        # set minecraft world directory
+        if message.content.startswith(f"{self.prefix}SetWorldDir:"):
+            self.world_dir = message.content.split(":")[1]
+            self.update_settings("world", self.world_dir)
+            await message.channel.send(f"[BOT] [COMMAND]: changed world directory to: '{self.world_dir}'")
+        
+        # enable auto backup
+        if message.content.startswith(f"{self.prefix}EnableBackup"):
+            if self.world_dir == "None":
+                await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
+            else:
+                schedule.every(1).hour.do(self.backup)
+                self.is_backup = True
+                self.update_settings("backup", self.is_backup)
+                await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
+        
+        # disable auto backup
+        if message.content.startswith(f"{self.prefix}DisableBackup"):
+            schedule.cancel_job()
+            self.is_backup = False
+            self.update_settings("backup", self.is_backup)
+            await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
+        
+        # sends backup status
+        if message.content.startswith(f"{self.prefix}BackupStatus"):
+            if self.is_backup:
+                await message.channel.send(f"[BOT] [COMMAND]: World Backup enabled")
+            else:
+                await message.channel.send(f"[BOT] [COMMAND]: World Backup diabled")
+    
     
     # save a setting value to name in settings.settings
     def update_settings(self, settings_name, setting_value):
@@ -81,6 +131,13 @@ class Client(discord.Client):
     
     def start_server(self, sh, start_file):
         subprocess.call([sh, start_file])
+    
+    # backup minecraft world
+    def backup(self):
+        backup_path = f"{os.path.dirname(self.world_dir)}/backups"
+        if not os.path.exists(backup_path):
+            os.mkdir(backup_path)
+        shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
 
                 
 
