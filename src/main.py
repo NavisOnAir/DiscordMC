@@ -6,6 +6,7 @@ class Client(discord.Client):
         # get directory of main.py
         self.REAL_PATH = os.path.realpath(__file__)
         self.DIR_PATH = os.path.dirname(self.REAL_PATH)
+        self.is_server_running = False
 
     # method on loged in
     async def on_ready(self):
@@ -40,13 +41,23 @@ class Client(discord.Client):
             # checks if server_start_file is set
             if self.server_start_file == "None":
                 await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: |setServerFile:<server_file_path>")
+            elif self.is_server_running == True:
+                await message.channel.send(f"[BOT] [INFO]: Server is running!")
             else:
                 try:
                     await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
                     subprocess.call(["sh", self.server_start_file])
+                    self.is_server_running = True
                 except FileNotFoundError as e:
                     await message.channel.send(f"[BOT] [ERROR]: raised {e}")
-        
+        # Stop Server currently running
+        if message.content == f"{self.prefix}StopServer":
+            if self.is_server_running == False:
+                await message.channel.send(f"[BOT] [INFO]: no Server running!")
+            else:
+                await message.channel.send(f"[BOT] [INFO]: stopping Server...")
+                subprocess.call("stop")
+
         # set server file path
         if message.content.startswith("|setServerFile:"):
             self.server_start_file = message.content.split(":")[1]
