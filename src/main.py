@@ -78,72 +78,75 @@ class Client(discord.Client):
             'BackupStatus' sends the backup status either off or on\n
             """)
 
-        # Start server start script from server_file
-        if message.content == f"{self.prefix}StartServer":
-            # checks if server_start_file is set
-            if self.server_start_file == "None":
-                await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: {self.prefix}setServerFile:<server_file_path>")
-            elif self.is_server_running == True:
-                await message.channel.send(f"[BOT] [INFO]: Server is running!")
-            else:
-                try:
-                    await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
-                    start_prozess = multiprocessing.Process(target=self.start_server, args=("sh", self.server_start_file))
-                    start_prozess.start()
-                    self.is_server_running = True
-                except FileNotFoundError as e:
-                    await message.channel.send(f"[BOT] [ERROR]: raised {e}")
-        # Stop Server currently running
-        if message.content == f"{self.prefix}StopServer":
-            if self.is_server_running == False:
-                await message.channel.send(f"[BOT] [INFO]: no Server running!")
-            else:
-                # connect via rcon to server
-                if self.rcon_adress == "None" or self.rcon_password == "None":
-                    await message.channel.send(f"[BOT] [ERROR]: Please set rcon_adress and rcon_password in settings.json to use rcon")
-                    self.update_settings("rcon_adress", "None")
-                    self.update_settings("rcon_password", "None")
+        # only available if author has admin role
+        if message.author.top_role.permissions.administrator:
+            
+            # Start server start script from server_file
+            if message.content == f"{self.prefix}StartServer":
+                # checks if server_start_file is set
+                if self.server_start_file == "None":
+                    await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: {self.prefix}setServerFile:<server_file_path>")
+                elif self.is_server_running == True:
+                    await message.channel.send(f"[BOT] [INFO]: Server is running!")
                 else:
-                    with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
-                        resp = mcr.command("/stop")
-                        await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
-                    self.is_server_running = False
+                    try:
+                        await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
+                        start_prozess = multiprocessing.Process(target=self.start_server, args=("sh", self.server_start_file))
+                        start_prozess.start()
+                        self.is_server_running = True
+                    except FileNotFoundError as e:
+                        await message.channel.send(f"[BOT] [ERROR]: raised {e}")
+            # Stop Server currently running
+            if message.content == f"{self.prefix}StopServer":
+                if self.is_server_running == False:
+                    await message.channel.send(f"[BOT] [INFO]: no Server running!")
+                else:
+                    # connect via rcon to server
+                    if self.rcon_adress == "None" or self.rcon_password == "None":
+                        await message.channel.send(f"[BOT] [ERROR]: Please set rcon_adress and rcon_password in settings.json to use rcon")
+                        self.update_settings("rcon_adress", "None")
+                        self.update_settings("rcon_password", "None")
+                    else:
+                        with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                            resp = mcr.command("/stop")
+                            await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
+                        self.is_server_running = False
 
-        # set server file path
-        if message.content.startswith(f"{self.prefix}setServerFile:"):
-            self.server_start_file = message.content.split(":")[1]
-            self.update_settings("server_file", self.server_start_file)
-            await message.channel.send(f"[BOT] [COMMAND]: changed start file to: '{self.server_start_file}'")
-        
-        # set minecraft world directory
-        if message.content.startswith(f"{self.prefix}SetWorldDir:"):
-            self.world_dir = message.content.split(":")[1]
-            self.update_settings("world", self.world_dir)
-            await message.channel.send(f"[BOT] [COMMAND]: changed world directory to: '{self.world_dir}'")
-        
-        # enable auto backup
-        if message.content.startswith(f"{self.prefix}EnableBackup"):
-            if self.world_dir == "None":
-                await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
-            else:
-                schedule.every(1).hour.do(self.backup)
-                self.is_backup = True
+            # set server file path
+            if message.content.startswith(f"{self.prefix}setServerFile:"):
+                self.server_start_file = message.content.split(":")[1]
+                self.update_settings("server_file", self.server_start_file)
+                await message.channel.send(f"[BOT] [COMMAND]: changed start file to: '{self.server_start_file}'")
+            
+            # set minecraft world directory
+            if message.content.startswith(f"{self.prefix}SetWorldDir:"):
+                self.world_dir = message.content.split(":")[1]
+                self.update_settings("world", self.world_dir)
+                await message.channel.send(f"[BOT] [COMMAND]: changed world directory to: '{self.world_dir}'")
+            
+            # enable auto backup
+            if message.content.startswith(f"{self.prefix}EnableBackup"):
+                if self.world_dir == "None":
+                    await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
+                else:
+                    schedule.every(1).hour.do(self.backup)
+                    self.is_backup = True
+                    self.update_settings("backup", self.is_backup)
+                    await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
+            
+            # disable auto backup
+            if message.content.startswith(f"{self.prefix}DisableBackup"):
+                schedule.cancel_job()
+                self.is_backup = False
                 self.update_settings("backup", self.is_backup)
                 await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
-        
-        # disable auto backup
-        if message.content.startswith(f"{self.prefix}DisableBackup"):
-            schedule.cancel_job()
-            self.is_backup = False
-            self.update_settings("backup", self.is_backup)
-            await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
-        
-        # sends backup status
-        if message.content.startswith(f"{self.prefix}BackupStatus"):
-            if self.is_backup:
-                await message.channel.send(f"[BOT] [COMMAND]: World Backup enabled")
-            else:
-                await message.channel.send(f"[BOT] [COMMAND]: World Backup diabled")
+            
+            # sends backup status
+            if message.content.startswith(f"{self.prefix}BackupStatus"):
+                if self.is_backup:
+                    await message.channel.send(f"[BOT] [COMMAND]: World Backup enabled")
+                else:
+                    await message.channel.send(f"[BOT] [COMMAND]: World Backup diabled")
     
     
     # save a setting value to name in settings.settings
