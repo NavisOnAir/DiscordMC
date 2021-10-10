@@ -45,14 +45,14 @@ class Client(discord.Client):
             self.update_settings("backup", self.is_backup)
         
         # auto backup
-        try:
+        """try:
             self.is_backup = settings["backup"]
             if self.is_backup and self.world_dir != "None":
                 self.backup_schedule = schedule.every(1).hour.do(self.backup)
 
         except KeyError:
             self.is_backup = False
-            self.update_settings("backup", self.is_backup)
+            self.update_settings("backup", self.is_backup)"""
         
         # rcon
         try:
@@ -131,20 +131,22 @@ class Client(discord.Client):
             
             # enable auto backup
             if message.content.startswith(f"{self.prefix}EnableBackup"):
-                if self.world_dir == "None":
+                await message.channel.send(f"[BOT] [COMMAND]: Auto Backup WIP")
+                """if self.world_dir == "None":
                     await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory: '{self.prefix}SetWorldDir:<path/to/world>'")
                 else:
                     self.backup_schedule = schedule.every(1).hour.do(self.backup)
                     self.is_backup = True
                     self.update_settings("backup", self.is_backup)
-                    await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
+                    await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")"""
             
             # disable auto backup
             if message.content.startswith(f"{self.prefix}DisableBackup"):
-                schedule.cancel_job(self.backup_schedule)
+                await message.channel.send(f"[BOT] [COMMAND]: Auto Backup WIP")
+                """schedule.cancel_job(self.backup_schedule)
                 self.is_backup = False
                 self.update_settings("backup", self.is_backup)
-                await message.channel.send(f"[BOT] [COMMAND]: Disabled auto Backup! At your own Risk!")
+                await message.channel.send(f"[BOT] [COMMAND]: Disabled auto Backup! At your own Risk!")"""
             
             # sends backup status
             if message.content.startswith(f"{self.prefix}BackupStatus"):
@@ -197,18 +199,7 @@ class Client(discord.Client):
         else:
             shutil.copytree(self.world_dir, f"{backup_path}/world-{time.localtime()[2]}.{time.localtime()[1]}.{time.localtime()[0]}-{time.localtime()[3]}:{time.localtime()[4]}")
 
-# run next method schuduled at scheduled time
-def check_schedule():
-    schedule.run_pending()
-    TimerInstance = threading.Timer(60.0, check_schedule)
-    TimerInstance.daemon = True
-    TimerInstance.start()
-
-
 if __name__ == '__main__':
-    # schedule loop
-    check_schedule()
-
     # directory path
     DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
