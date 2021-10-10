@@ -44,7 +44,7 @@ class Client(discord.Client):
         
         # set server file path
         if message.content.startswith("|setServerFile:"):
-            self.server_start_file == message.content.split(":")[1]
+            self.server_start_file = message.content.split(":")[1]
             self.update_settings("server_file", self.server_start_file)
             await message.channel.send(f"[BOT] [COMMAND]: changed start file to: '{self.server_start_file}'")
     
