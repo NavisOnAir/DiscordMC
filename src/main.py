@@ -1,4 +1,5 @@
-import discord, subprocess, os, json
+import discord, subprocess, os, json, multiprocessing
+from mcrcon import MCRcon
 
 class Client(discord.Client):
     def __init__(self, *, loop=None, **options):
@@ -46,7 +47,8 @@ class Client(discord.Client):
             else:
                 try:
                     await message.channel.send(f"[BOT] [COMMAND]: starting Server...")
-                    subprocess.call(["sh", self.server_start_file])
+                    start_prozess = multiprocessing.Process(target=self.start_server, args=("sh", self.server_start_file))
+                    start_prozess.start()
                     self.is_server_running = True
                 except FileNotFoundError as e:
                     await message.channel.send(f"[BOT] [ERROR]: raised {e}")
@@ -55,8 +57,10 @@ class Client(discord.Client):
             if self.is_server_running == False:
                 await message.channel.send(f"[BOT] [INFO]: no Server running!")
             else:
-                await message.channel.send(f"[BOT] [INFO]: stopping Server...")
-                subprocess.call("stop")
+                # connect via rcon to server
+                with MCRcon("192.168.178.160", "test") as mcr:
+                    resp = mcr.command("/stop")
+                    await message.channel.send(f"[MINECRAFT] [SERVER]: {resp}")
 
         # set server file path
         if message.content.startswith("|setServerFile:"):
@@ -73,6 +77,9 @@ class Client(discord.Client):
         # write new settings data
         with open(f"{self.DIR_PATH}/settings.json", 'w') as f:
             f.write(json.dumps(settings))
+    
+    def start_server(self, sh, start_file):
+        subprocess.call([sh, start_file])
 
                 
 
