@@ -46,7 +46,7 @@ class Client(discord.Client):
         try:
             self.is_backup = settings["backup"]
             if self.is_backup and self.world_dir != "None":
-                schedule.every(1).hour.do(self.backup)
+                self.backup_schedule = schedule.every(1).hour.do(self.backup)
 
         except KeyError:
             self.is_backup = False
@@ -80,7 +80,7 @@ class Client(discord.Client):
 
         # only available if author has admin role
         if message.author.top_role.permissions.administrator:
-            
+
             # Start server start script from server_file
             if message.content == f"{self.prefix}StartServer":
                 # checks if server_start_file is set
@@ -136,7 +136,7 @@ class Client(discord.Client):
             
             # disable auto backup
             if message.content.startswith(f"{self.prefix}DisableBackup"):
-                schedule.cancel_job()
+                schedule.cancel_job(self.backup_schedule)
                 self.is_backup = False
                 self.update_settings("backup", self.is_backup)
                 await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup every hour")
