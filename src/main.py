@@ -164,6 +164,7 @@ class Client(discord.Client):
     
     # backup minecraft world
     def backup(self):
+        print("[BOT] [BACKUP]: Started backup")
         with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
             resp = mcr.command('/tellraw @a [{"text":"Start Backup","color":"aqua"}]')
         backup_path = f"{os.path.dirname(self.world_dir)}/backups"
@@ -174,7 +175,7 @@ class Client(discord.Client):
 # run next method schuduled at scheduled time
 def check_schedule():
     schedule.run_pending()
-    threading.Timer(60.0, check_schedule)
+    threading.Timer(30.0, check_schedule)
 
 
 if __name__ == '__main__':
