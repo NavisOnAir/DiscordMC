@@ -1,14 +1,20 @@
 import discord, subprocess, os, json
 
 class Client(discord.Client):
+    def __init__(self, *, loop=None, **options):
+        super().__init__(loop=loop, **options)
+        # get directory of main.py
+        self.REAL_PATH = os.path.realpath(__file__)
+        self.DIR_PATH = os.path.dirname(self.REAL_PATH)
+
     # method on loged in
     async def on_ready(self):
         # fetch settings data
-        if not os.path.exists("settings.json"):
+        if not os.path.exists(f"{self.DIR_PATH}/settings.json"):
             json_init = {}
-            with open("settings.json", 'w') as f:
+            with open(f"{self.DIR_PATH}/settings.json", 'w') as f:
                 f.write(json.dumps(json_init))
-        with open("settings.json", 'r') as f:
+        with open(f"{self.DIR_PATH}/settings.json", 'r') as f:
             settings = json.loads(f.read())
         
         # set settings variables
@@ -23,8 +29,7 @@ class Client(discord.Client):
             self.server_start_file = settings["server_file"]
         except KeyError:
             self.server_start_file = "None"
-            self.update_settings("server_file", self.server_start_file)
-        
+            self.update_settings("server_file", self.server_start_file)        
 
         print("Bot logged in")
     
@@ -51,19 +56,22 @@ class Client(discord.Client):
     # save a setting value to name in settings.settings
     def update_settings(self, settings_name, setting_value):
         # read settings data
-        with open("settings.json", 'r') as f:
+        with open(f"{self.DIR_PATH}/settings.json", 'r') as f:
             settings = json.loads(f.read())
         settings[settings_name] = setting_value
         # write new settings data
-        with open("settings.json", 'w') as f:
+        with open(f"{self.DIR_PATH}/settings.json", 'w') as f:
             f.write(json.dumps(settings))
 
                 
 
 
 if __name__ == '__main__':
+    # directory path
+    DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+
     # saves token in token variable
-    with open("token.txt", 'r') as f:
+    with open(f"{DIR_PATH}/token.txt", 'r') as f:
         token = f.read()
 
     # create instance of Client and runs it
