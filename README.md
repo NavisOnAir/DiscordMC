@@ -17,4 +17,4 @@ Installation:
 - add your bot to a discord server
 - launch main.py with python
 
-tested on Ubuntu
+tested on Ubuntu 20.10
