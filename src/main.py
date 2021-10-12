@@ -111,10 +111,9 @@ class Client(discord.Client):
                         self.update_settings("rcon_password", "None")
                     else:
                         self.is_server_running = False
-                        if self.is_backup and self.world_dir != 'None':
+                        if self.is_backup:
                             self.backup()
-                        elif self.world_dir == 'None':
-                            await message.channel.send(f"[BOT] [COMMAND]: You first need to set World directory to backup worlds: '{self.prefix}SetWorldDir:<path/to/world>'")
+                            await message.channel.send(f"[BOT] [SERVER]: Stopped Minecraft Server!")
                         else:
                             with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
                                 resp = mcr.command("/stop")
@@ -146,7 +145,6 @@ class Client(discord.Client):
                     self.is_backup = True
                     self.update_settings("backup", self.is_backup)
                     await message.channel.send(f"[BOT] [COMMAND]: Enabled auto Backup after server stopped")
-                    self.backup()
             
             # disable auto backup
             if message.content.startswith(f"{self.prefix}DisableBackup"):
