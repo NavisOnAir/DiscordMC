@@ -86,6 +86,14 @@ class Client(discord.Client):
             # Start server start script from server_file
             if message.content == f"{self.prefix}StartServer":
                 # checks if server_start_file is set
+                try:
+                    with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                        rcv = mcr.command("/ping")
+                        print(f"[BOT] [MINECRAFT_RESPONSE]: {rcv}")
+                    self.is_server_running = True
+                except:
+                    self.is_server_running = False
+                    print("[BOT]: Server is not running")
                 if self.server_start_file == "None":
                     await message.channel.send(f"[BOT] [INFO]: you need to first set server start file path with: {self.prefix}setServerFile:<server_file_path>")
                 elif self.is_server_running == True:
