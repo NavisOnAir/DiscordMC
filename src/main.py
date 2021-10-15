@@ -81,10 +81,14 @@ class Client(discord.Client):
             """)
 
         # only available if author has admin role
-        if message.author.top_role.permissions.administrator:
-
-            # Start server start script from server_file
-            if message.content == f"{self.prefix}StartServer":
+        # Start server start script from server_file
+        if message.content == f"{self.prefix}StartServer":
+            for role in message.author.roles:
+                if "Minecraft" == role.name or role.permissions.administrator:
+                    start_permission = True
+                else:
+                    start_permission = False
+            if start_permission:
                 # checks if server_start_file is set
                 try:
                     with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
@@ -106,6 +110,24 @@ class Client(discord.Client):
                         self.is_server_running = True
                     except FileNotFoundError as e:
                         await message.channel.send(f"[BOT] [ERROR]: raised {e}")
+            else:
+                await message.channel.send(f"[BOT] [ERROR]: {message.author.mention} has no permission to execute command!")
+
+        if message.author.top_role.permissions.administrator:
+            # executes command in minecraft console:
+            if message.content.startswith(f"{self.prefix}cmd "):
+                message_list = message.content.split(" ")
+                cmd = ""
+                for text in message_list:
+                    if text != f"{self.prefix}cmd":
+                        cmd += f"{text} "
+                try:
+                    with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
+                        rsp = mcr.command(cmd)
+                    await message.channel.send(f"[BOT] [MINECRAFT]: {rsp}")
+                except socket.gaierror as e:
+                    await message.channel.send(f"[BOT] [ERROR]: {e}")
+
 
             # Stop Server currently running
             if message.content == f"{self.prefix}StopServer":
