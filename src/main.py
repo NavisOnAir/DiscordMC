@@ -120,7 +120,10 @@ class Client(discord.Client):
                 cmd = ""
                 for text in message_list:
                     if text != f"{self.prefix}cmd":
-                        cmd += f"{text} "
+                        if not text == message_list[-1]:
+                            cmd += f"{text} "
+                        else:
+                            cmd += f"{text}"
                 try:
                     with MCRcon(self.rcon_adress, self.rcon_password) as mcr:
                         rsp = mcr.command(cmd)
